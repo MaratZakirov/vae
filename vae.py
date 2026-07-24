@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torchvision import datasets, transforms
+from torchvision.utils import make_grid, save_image
 
 class LinearBlock(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -89,9 +90,26 @@ def train_vae(train_loader, test_loader, model, optimizer, epochs):
         eval_loss /= len(test_loader)
         print(f' ==== Epoch {epoch+1}/{epochs} | Loss: {eval_loss:.4f}')
 
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), 'vae.pth')
+            with torch.no_grad():
+                z = torch.randn(100, model.latent_dim).to(device)
+                samples = model.decoder(z).view(-1, 1, 28, 28)
+                grid = make_grid(samples, nrow=10, normalize=True, pad_value=1, padding=2)
+                grid = torch.nn.functional.interpolate(
+                    grid.unsqueeze(0), scale_factor=2, mode='bilinear', align_corners=False
+                ).squeeze(0)
+                save_image(grid, f'sample_epoch_{epoch:03d}.png')
+
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = VAE(28*28,64).to(device)
+    model = VAE(28*28,16).to(device)
+
+    total_params = sum(p.numel() for p in model.parameters())
+    encoder_params = sum(p.numel() for p in model.encoder.parameters())
+    decoder_params = sum(p.numel() for p in model.decoder.parameters())
+    print('Total model size:', total_params, "encoder:", encoder_params, "decoder:", decoder_params)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     elbo_loss = ELBO_Loss()
 
