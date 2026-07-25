@@ -34,9 +34,6 @@ VAE architecture is one of the most common interview topics at many ML/DL/CV com
 
 ---
 
-
----
-
 # ELBO Loss: from theory to practice (MSE / KL)
 
 ## 1. Main idea
@@ -45,13 +42,13 @@ The goal is to maximize the log-likelihood of the data $\log p(x)$.
 But the exact calculation of the posterior $p(z|x)$ is analytically intractable. To overcome this, we introduce an approximate posterior $q(z|x)$, and apply **Jensen's inequality** to the original expression:
 
 $$
-\log p(x) = \log \int p(x, z)\,dz = \log \int q(z|x) \frac{p(x, z)}{q(z|x)}\,dz \ge \int q(z|x) \log \frac{p(x, z)}{q(z|x)}\,dz
+\log p(x) = \log \int p(x, z)\ dz = \log \int q(z|x) \frac{p(x, z)}{q(z|x)}\,dz \ge \int q(z|x) \log \frac{p(x, z)}{q(z|x)}\,dz
 $$
 
 The right-hand side is called **ELBO** (**E**vidence **L**ower **BO**und):
 
 $$
-\text{ELBO} = \mathbb{E}_{q(z|x)} \left[ \log \frac{p(x, z)}{q(z|x)} \right]
+\text{ELBO} = \mathbb{E}_{q(z|x)} \left[ \log \frac{p(x, z)}{q(z|x)} \right] = \mathbb{E}_{q(z|x)} \left[ \log \frac{p(x|z)p(z)}{q(z|x)} \right]=\mathbb{E}_{q(z|x)} \left[ \log p(x|z) \right] - \mathbb{E}_{q(z|x)} \left[ \log \frac{q(z|x)}{p(z)} \right]
 $$
 
 ### Decomposition into two terms
